@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>cannon.js - domino demo</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css" type="text/css"/>
+  </head>
+  <body>
+    <script src="../build/cannon.js"></script>
+    <script src="../build/cannon.demo.js"></script>
+    <script src="../libs/dat.gui.js"></script>
+    <script src="../libs/Three.js"></script>
+    <script src="../libs/Detector.js"></script>
+    <script src="../libs/Stats.js"></script>
+    <script src="../libs/smoothie.js"></script>
+    <script>
+ /**
+  * Domino Example 
+  * @author Matteo Borrelli https://github.com/metmet
+  * Full example : http://www.webgl.it/tests/domino.html
+*/
+    var demo = new CANNON.Demo();
+
+    demo.addScene("Domino",function(){
+	  
+	  	threeArray = [], cannonArray = [];
+	    // Create world
+		var world = demo.getWorld();
+		world.broadphase = new CANNON.NaiveBroadphase();
+		world.iterations = 10;
+
+        // Materials
+        var groundMaterial		= new CANNON.Material("groundMaterial");
+        var ground_ground_cm	= new CANNON.ContactMaterial(groundMaterial,
+                                                          groundMaterial,
+                                                          0.4, // friction coefficient
+                                                          0.3  // restitution
+                                                          );
+        // Adjust constraint equation parameters for ground/ground contact
+        ground_ground_cm.contactEquationStiffness = 1e8;
+        ground_ground_cm.contactEquationRegularizationTime = 3;
+        ground_ground_cm.frictionEquationStiffness = 1e8;
+        ground_ground_cm.frictionEquationRegularizationTime = 3;
+
+        // Add contact material to the world
+        world.addContactMaterial(ground_ground_cm);
+
+        // ground plane
+        var groundShape = new CANNON.Plane();
+        var groundBody = new CANNON.RigidBody(0,groundShape,groundMaterial);
+        world.add(groundBody);
+        demo.addVisual(groundBody);
+
+		var a = 0;
+		var y = 0;
+		var z = 1.5;
+		for (var i = 0 ; i <= 22 ; i++){
+
+			shape = new CANNON.Box(new CANNON.Vec3( 0.2,0.7,1.5 ));
+			var density = 2515; // kg/m^3
+			var mass = density * shape.volume();
+			var body = new CANNON.RigidBody(mass,shape);
+
+			var x = -10 + (1.5*a);
+			
+			var objPosition = new CANNON.Vec3( x, y, z );
+			
+			if (a == 10  || a == 11 || a == 12 || a == 13){
+				objPosition = createAngle(a,body);
+				if ( a == 13) {a = 0; y = -4;}
+			}
+			body.position.set(objPosition.x,objPosition.y,objPosition.z);
+			world.add(body);
+			cannonArray.push(body);
+		    demo.addVisual(body);
+			a++;
+		}
+		world.gravity.set(0,0,-80);
+		
+		alert('start domino');
+		objCannon = cannonArray[0];
+		objCannon.angularVelocity.set(0,15,0);
+		objCannon.angularDamping = 0.5;
+		
+	});
+	function createAngle(num, body){
+		if (num == 10){
+			r = new CANNON.Vec3(5,0,1.5);
+			body.quaternion.setFromAxisAngle(new CANNON.Vec3(0,0,1), -Math.PI / 4);
+		}
+		if (num == 11){
+			r = new CANNON.Vec3(5.4,-1,1.5);
+			body.quaternion.setFromAxisAngle(new CANNON.Vec3(0,0,1), -Math.PI / 2);
+		}
+		if (num == 12){
+			r = new CANNON.Vec3(5.4,-2,1.5);
+			body.quaternion.setFromAxisAngle(new CANNON.Vec3(0,0,1), -Math.PI / 2);
+		}
+		if (num == 13){
+			r = new CANNON.Vec3(5.4,-3,1.5);
+			body.quaternion.setFromAxisAngle(new CANNON.Vec3(0,0,1), Math.PI / 4);
+		}
+		return r;
+			
+	}	
+    demo.start();
+    </script>
+  </body>
+</html>
